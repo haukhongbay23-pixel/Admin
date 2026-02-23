@@ -1,4 +1,4 @@
--- [[ SCRIPT BY CHII HAUU - FINAL V3 ORGANIZED ]] --
+-- [[ CHII HAUU - FIX AUTO STATS & OPTIMIZED ]] --
 
 _G.AutoFarm = false
 _G.AutoBuso = false
@@ -6,23 +6,58 @@ _G.BringMobs = false
 _G.FastAttack = true 
 _G.AttackDistance = 10 
 _G.AutoStats = false 
-_G.SelectWeapon = "Combat" -- Nhớ đổi tên đúng vũ khí đang có
+_G.SelectWeapon = "" 
 
-local QuestNPC = "Bandit Quest Giver"
-local QuestName = "BanditQuest1"
-local MonsterName = "Bandit"
+local QuestNPC, QuestName, MonsterName = "", "", ""
 
--- 1. HỆ THỐNG GIAO DIỆN (UI)
+-- 1. CHII HAUU - UPDATE QUEST LOGIC
+local function UpdateQuest()
+    local lvl = game.Players.LocalPlayer.Data.Level.Value
+    if lvl >= 0 and lvl < 15 then
+        QuestNPC = "Bandit Quest Giver"; QuestName = "BanditQuest1"; MonsterName = "Bandit"
+    elseif lvl >= 15 and lvl < 30 then
+        QuestNPC = "Monkey Quest Giver"; QuestName = "MonkeyQuest1"; MonsterName = "Monkey"
+    elseif lvl >= 30 and lvl < 60 then
+        QuestNPC = "Pirate Adventurer"; QuestName = "PirateQuest1"; MonsterName = "Pirate"
+    elseif lvl >= 60 and lvl < 90 then
+        QuestNPC = "Desert Adventurer"; QuestName = "DesertQuest"; MonsterName = "Desert Bandit"
+    elseif lvl >= 90 and lvl < 120 then
+        QuestNPC = "Snow Quest Giver"; QuestName = "SnowQuest"; MonsterName = "Snow Bandit"
+    elseif lvl >= 120 and lvl < 150 then
+        QuestNPC = "Chief Petty Officer"; QuestName = "MarineQuest2"; MonsterName = "Chief Petty Officer"
+    elseif lvl >= 150 and lvl < 190 then
+        QuestNPC = "Sky Quest Giver"; QuestName = "SkyQuest"; MonsterName = "Sky Bandit"
+    elseif lvl >= 190 and lvl < 250 then
+        QuestNPC = "Prisoner Quest Giver"; QuestName = "PrisonerQuest"; MonsterName = "Prisoner"
+    elseif lvl >= 250 and lvl < 300 then
+        QuestNPC = "Magma Quest Giver"; QuestName = "MagmaQuest"; MonsterName = "Military Soldier"
+    elseif lvl >= 300 and lvl < 330 then
+        QuestNPC = "Magma Quest Giver"; QuestName = "MagmaQuest"; MonsterName = "Military Spy"
+    elseif lvl >= 330 and lvl < 375 then
+        QuestNPC = "Fishman Quest Giver"; QuestName = "FishmanQuest"; MonsterName = "Fishman Warrior"
+    elseif lvl >= 375 and lvl < 400 then
+        QuestNPC = "Fishman Quest Giver"; QuestName = "FishmanQuest"; MonsterName = "Fishman Commando"
+    elseif lvl >= 400 and lvl < 525 then
+        QuestNPC = "Wysper"; QuestName = "SkyExp1Quest"; MonsterName = "God's Guard"
+    elseif lvl >= 525 and lvl < 625 then
+        QuestNPC = "Wysper"; QuestName = "SkyExp2Quest"; MonsterName = "Shanda"
+    elseif lvl >= 625 and lvl < 700 then
+        QuestNPC = "Cyborg Quest Giver"; QuestName = "LastVillageQuest"; MonsterName = "Galley Pirate"
+    elseif lvl >= 700 then
+        QuestNPC = "Quest Custodian"; QuestName = "Area1Quest"; MonsterName = "Raider"
+    end
+end
+
+-- 2. CHII HAUU - UI (GIỮ NGUYÊN GIAO DIỆN CỦA BẠN)
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "ChiiHauuHub_Final"
+ScreenGui.Name = "CHII_HAUU"
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 420, 0, 320)
-MainFrame.Position = UDim2.new(0.5, -210, 0.5, -160)
+MainFrame.Size = UDim2.new(0, 420, 0, 360)
+MainFrame.Position = UDim2.new(0.5, -210, 0.5, -180)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Visible = false
@@ -41,10 +76,6 @@ CloseOpenBtn.Active = true
 CloseOpenBtn.Draggable = true
 CloseOpenBtn.Parent = ScreenGui
 
-local btnCorner = Instance.new("UICorner")
-btnCorner.CornerRadius = UDim.new(0, 8)
-btnCorner.Parent = CloseOpenBtn
-
 local btnStroke = Instance.new("UIStroke")
 btnStroke.Thickness = 2
 btnStroke.Parent = CloseOpenBtn
@@ -54,7 +85,7 @@ CloseOpenBtn.MouseButton1Click:Connect(function()
 end)
 
 local Title = Instance.new("TextLabel")
-Title.Text = "CHII HAUU HUB - FINAL V3"
+Title.Text = "CHII HAUU"
 Title.Size = UDim2.new(1, 0, 0, 40)
 Title.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Title.TextColor3 = Color3.new(1, 1, 1)
@@ -80,6 +111,36 @@ spawn(function()
     end
 end)
 
+local WeaponLabel = Instance.new("TextLabel")
+WeaponLabel.Text = "Weapon: None"
+WeaponLabel.Size = UDim2.new(1, -10, 0, 30)
+WeaponLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+WeaponLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+WeaponLabel.Font = Enum.Font.GothamSemibold
+WeaponLabel.Parent = ContentFrame
+
+local RefreshBtn = Instance.new("TextButton")
+RefreshBtn.Text = "CHII HAUU - REFRESH WEAPON"
+RefreshBtn.Size = UDim2.new(1, -10, 0, 35)
+RefreshBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+RefreshBtn.TextColor3 = Color3.new(1, 1, 1)
+RefreshBtn.Font = Enum.Font.GothamBold
+RefreshBtn.Parent = ContentFrame
+
+RefreshBtn.MouseButton1Click:Connect(function()
+    for _, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+        if v:IsA("Tool") then
+            _G.SelectWeapon = v.Name
+            WeaponLabel.Text = "Weapon: "..v.Name
+        end
+    end
+    local held = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
+    if held then 
+        _G.SelectWeapon = held.Name 
+        WeaponLabel.Text = "Weapon: "..held.Name
+    end
+end)
+
 local function CreateToggle(name, default, callback)
     local ToggleFrame = Instance.new("Frame")
     ToggleFrame.Size = UDim2.new(1, -10, 0, 38)
@@ -101,21 +162,12 @@ local function CreateToggle(name, default, callback)
     SlideBack.BackgroundColor3 = default and Color3.fromRGB(0, 180, 0) or Color3.fromRGB(60, 60, 60)
     SlideBack.Parent = ToggleFrame
     
-    local SlideCorner = Instance.new("UICorner")
-    SlideCorner.CornerRadius = UDim.new(1, 0)
-    SlideCorner.Parent = SlideBack
-
     local Ball = Instance.new("Frame")
     Ball.Size = UDim2.new(0, 18, 0, 18)
     Ball.Position = default and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)
     Ball.BackgroundColor3 = Color3.new(1, 1, 1)
     Ball.Parent = SlideBack
 
-    local BallCorner = Instance.new("UICorner")
-    BallCorner.CornerRadius = UDim.new(1, 0)
-    BallCorner.Parent = Ball
-
-    local state = default
     local Button = Instance.new("TextButton")
     Button.Size = UDim2.new(1, 0, 1, 0)
     Button.BackgroundTransparency = 1
@@ -123,45 +175,77 @@ local function CreateToggle(name, default, callback)
     Button.Parent = SlideBack
 
     Button.MouseButton1Click:Connect(function()
-        state = not state
-        SlideBack.BackgroundColor3 = state and Color3.fromRGB(0, 180, 0) or Color3.fromRGB(60, 60, 60)
-        Ball:TweenPosition(state and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9), "Out", "Quad", 0.2, true)
-        callback(state)
+        default = not default
+        SlideBack.BackgroundColor3 = default and Color3.fromRGB(0, 180, 0) or Color3.fromRGB(60, 60, 60)
+        Ball:TweenPosition(default and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9), "Out", "Quad", 0.2, true)
+        callback(default)
     end)
 end
 
 CreateToggle("Auto Farm Level", _G.AutoFarm, function(v) _G.AutoFarm = v end)
 CreateToggle("Gom Quái (Bring)", _G.BringMobs, function(v) _G.BringMobs = v end)
 CreateToggle("Siêu Đánh Nhanh", _G.FastAttack, function(v) _G.FastAttack = v end)
-CreateToggle("Auto Buso Haki", _G.AutoBuso, function(v) _G.AutoBuso = v end)
 CreateToggle("Auto Stats (Melee)", _G.AutoStats, function(v) _G.AutoStats = v end)
 
--- 2. HỆ THỐNG LOGIC GAME
-function CheckHasQuest()
-    local pGui = game.Players.LocalPlayer:FindFirstChild("PlayerGui")
-    if pGui and pGui:FindFirstChild("Main") and pGui.Main:FindFirstChild("Quest") then
-        return pGui.Main.Quest.Visible
+-- 3. CHII HAUU - CORE LOGIC
+local function GetNearestTarget()
+    local nearest = nil
+    local dist = 25 
+    local myRoot = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    
+    if myRoot then
+        for _, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+            if v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+                local d = (myRoot.Position - v.HumanoidRootPart.Position).Magnitude
+                if d < dist then nearest = v; dist = d end
+            end
+        end
+        for _, p in pairs(game:GetService("Players"):GetPlayers()) do
+            if p ~= game.Players.LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                local d = (myRoot.Position - p.Character.HumanoidRootPart.Position).Magnitude
+                if d < dist then nearest = p.Character; dist = d end
+            end
+        end
     end
-    return false
+    return nearest
 end
 
--- Vòng lặp Gom & Đánh
+-- THỰC THI AUTO STATS (MỚI BỔ SUNG)
+spawn(function()
+    while task.wait(1) do
+        if _G.AutoStats then
+            pcall(function()
+                local points = game.Players.LocalPlayer.Data.StatsPoints.Value
+                if points > 0 then
+                    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AddPoint", "Melee", points)
+                end
+            end)
+        end
+    end
+end)
+
 spawn(function()
     while task.wait() do
         if _G.AutoFarm then
             pcall(function()
                 local char = game.Players.LocalPlayer.Character
-                if char and char:FindFirstChildOfClass("Tool") and _G.FastAttack then
-                    game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 672))
+                if _G.SelectWeapon ~= "" and not char:FindFirstChild(_G.SelectWeapon) then
+                    local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(_G.SelectWeapon)
+                    if tool then char.Humanoid:EquipTool(tool) end
                 end
-
+                
+                if char:FindFirstChildOfClass("Tool") and _G.FastAttack then
+                    if GetNearestTarget() then
+                        game:GetService("VirtualUser"):CaptureController()
+                        game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 672))
+                    end
+                end
+                
                 if _G.BringMobs then
                     for _, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
                         if v.Name == MonsterName and v:FindFirstChild("HumanoidRootPart") and v.Humanoid.Health > 0 then
-                            if (v.HumanoidRootPart.Position - char.HumanoidRootPart.Position).Magnitude < 250 then
-                                v.HumanoidRootPart.CanCollide = false
-                                v.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame * CFrame.new(0, 0, -5)
-                            end
+                            v.HumanoidRootPart.CanCollide = false
+                            v.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame * CFrame.new(0, 0, -5)
                         end
                     end
                 end
@@ -170,32 +254,19 @@ spawn(function()
     end
 end)
 
--- Vòng lặp Farm & Quest
 spawn(function()
-    while task.wait() do
+    while task.wait(0.2) do
         if _G.AutoFarm then
+            UpdateQuest() 
             pcall(function()
-                local player = game.Players.LocalPlayer
-                local char = player.Character
+                local char = game.Players.LocalPlayer.Character
                 if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-                
-                -- Noclip chuyên nghiệp
-                for _, v in pairs(char:GetDescendants()) do
-                    if v:IsA("BasePart") then v.CanCollide = false end
-                end
+                for _, v in pairs(char:GetChildren()) do if v:IsA("BasePart") then v.CanCollide = false end end
 
-                if _G.AutoStats then game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AddPoint", "Melee", 1) end
-                
-                if not char:FindFirstChildOfClass("Tool") then
-                    local w = player.Backpack:FindFirstChild(_G.SelectWeapon)
-                    if w then char.Humanoid:EquipTool(w) end
-                end
-
-                if not CheckHasQuest() then
+                if not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible then
                     local npc = game:GetService("Workspace").NPCs:FindFirstChild(QuestNPC)
                     if npc then
                         char.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame * CFrame.new(0, 5, 0)
-                        task.wait(0.2)
                         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", QuestName, 1)
                     end
                 else
@@ -203,8 +274,12 @@ spawn(function()
                     if enemy and enemy:FindFirstChild("HumanoidRootPart") and enemy.Humanoid.Health > 0 then
                         char.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, _G.AttackDistance, 0)
                     else
-                        local sp = game:GetService("Workspace").EnemySpawns:FindFirstChild(MonsterName)
-                        if sp then char.HumanoidRootPart.CFrame = sp.CFrame * CFrame.new(0, 25, 0) end
+                        for _, sp in pairs(game:GetService("Workspace").EnemySpawns:GetChildren()) do
+                            if sp.Name == MonsterName then
+                                char.HumanoidRootPart.CFrame = sp.CFrame * CFrame.new(0, 20, 0)
+                                break
+                            end
+                        end
                     end
                 end
             end)
