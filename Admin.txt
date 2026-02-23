@@ -1,0 +1,132 @@
+-- [[ SCRIPT BY CHII HAUU ]] --
+_G.AutoFarm = false
+_G.AutoBuso = false
+_G.AutoKen = false
+_G.BringMobs = false
+_G.FastAttack = true 
+_G.SelectWeapon = "Combat" -- Đổi tên vũ khí ở đây
+
+local QuestNPC = "Bandit Quest Giver"
+local QuestName = "BanditQuest1"
+local MonsterName = "Bandit"
+
+-- 1. GIAO DIỆN (UI)
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Sidebar = Instance.new("ScrollingFrame")
+local Title = Instance.new("TextLabel")
+local Layout = Instance.new("UIListLayout")
+
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+MainFrame.Size = UDim2.new(0, 500, 0, 320)
+MainFrame.Position = UDim2.new(0.5, -250, 0.5, -160)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+Title.Text = "HUB BY CHII HAUU"
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Title.TextColor3 = Color3.fromRGB(0, 255, 127)
+Title.TextSize = 20
+Title.Font = Enum.Font.GothamBold
+Title.Parent = MainFrame
+
+Sidebar.Size = UDim2.new(0, 160, 1, -50)
+Sidebar.Position = UDim2.new(0, 5, 0, 45)
+Sidebar.BackgroundTransparency = 1
+Sidebar.Parent = MainFrame
+Layout.Parent = Sidebar
+Layout.Padding = UDim.new(0, 5)
+
+local function CreateToggle(name, parent, default, callback)
+    local Button = Instance.new("TextButton")
+    Button.Size = UDim2.new(1, -10, 0, 35)
+    Button.BackgroundColor3 = default and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(50, 50, 50)
+    Button.Text = name .. (default and ": ON" or ": OFF")
+    Button.TextColor3 = Color3.new(1, 1, 1)
+    Button.Font = Enum.Font.Gotham
+    Button.Parent = parent
+    
+    local state = default
+    Button.MouseButton1Click:Connect(function()
+        state = not state
+        Button.Text = name .. (state and ": ON" or ": OFF")
+        Button.BackgroundColor3 = state and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(50, 50, 50)
+        callback(state)
+    end)
+end
+
+CreateToggle("Auto Farm Level", Sidebar, _G.AutoFarm, function(v) _G.AutoFarm = v end)
+CreateToggle("Gom Quái (Bring)", Sidebar, _G.BringMobs, function(v) _G.BringMobs = v end)
+CreateToggle("Siêu Đánh Nhanh", Sidebar, _G.FastAttack, function(v) _G.FastAttack = v end)
+CreateToggle("Auto Buso Haki", Sidebar, _G.AutoBuso, function(v) _G.AutoBuso = v end)
+
+-- 2. HÀM CHECK QUEST
+function CheckHasQuest()
+    local q = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("Main")
+    return q and q:FindFirstChild("Quest") and q.Quest.Visible == true
+end
+
+-- 3. LOGIC GOM QUÁI & ĐÁNH NHANH
+spawn(function()
+    while wait() do
+        pcall(function()
+            if _G.AutoFarm then
+                if _G.BringMobs then
+                    local myPos = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
+                    for _, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+                        if v.Name == MonsterName and v:FindFirstChild("HumanoidRootPart") and v.Humanoid.Health > 0 then
+                            v.HumanoidRootPart.CanCollide = false
+                            v.HumanoidRootPart.CFrame = CFrame.new(myPos)
+                        end
+                    end
+                end
+                if _G.FastAttack then
+                    game:GetService("VirtualUser"):CaptureController()
+                    game:GetService("VirtualUser"):ClickButton1(Vector2.new(0,0))
+                end
+            end
+        end)
+    end
+end)
+
+-- 4. VÒNG LẶP CHÍNH
+spawn(function()
+    while wait(0.1) do
+        if _G.AutoFarm then
+            pcall(function()
+                local player = game.Players.LocalPlayer
+                local char = player.Character
+                local root = char.HumanoidRootPart
+
+                -- Buso Haki
+                if _G.AutoBuso and not char:FindFirstChild("HasBuso") then
+                    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
+                end
+                
+                -- Cầm vũ khí
+                if not char:FindFirstChildOfClass("Tool") then
+                    local w = player.Backpack:FindFirstChild(_G.SelectWeapon)
+                    if w then char.Humanoid:EquipTool(w) end
+                end
+
+                if not CheckHasQuest() then
+                    -- Nhận Quest
+                    local npc = game:GetService("Workspace").NPCs:FindFirstChild(QuestNPC)
+                    if npc then
+                        root.CFrame = npc.HumanoidRootPart.CFrame * CFrame.new(0, 5, 0)
+                        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", QuestName, 1)
+                    end
+                else
+                    -- Đánh quái
+                    local target = game:GetService("Workspace").Enemies:FindFirstChild(MonsterName)
+                    if target and target:FindFirstChild("HumanoidRootPart") then
+                        root.CFrame = target.HumanoidRootPart.CFrame * CFrame.new(0, 10, 0)
+                    end
+                end
+            end)
+        end
+    end
+end)
