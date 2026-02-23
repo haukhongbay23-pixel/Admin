@@ -1,70 +1,51 @@
--- [[ SCRIPT BY CHII HAUU ]] --
+-- [[ SCRIPT BY CHII HAUU - FINAL V3 ORGANIZED ]] --
+
 _G.AutoFarm = false
 _G.AutoBuso = false
 _G.BringMobs = false
 _G.FastAttack = true 
-_G.AutoStats = false -- Tính năng mới
-_G.SelectWeapon = "Combat" 
+_G.AttackDistance = 10 
+_G.AutoStats = false 
+_G.SelectWeapon = "Combat" -- Nhớ đổi tên đúng vũ khí đang có
 
 local QuestNPC = "Bandit Quest Giver"
 local QuestName = "BanditQuest1"
 local MonsterName = "Bandit"
 
--- 1. HÀM HỖ TRỢ (NOCLIP & ANTI-AFK)
-local function Noclip()
-    pcall(function()
-        local char = game.Players.LocalPlayer.Character
-        for _, v in pairs(char:GetDescendants()) do
-            if v:IsA("BasePart") and v.CanCollide == true then
-                v.CanCollide = false
-            end
-        end
-    end)
-end
-
--- Chống bị văng khi treo máy lâu
-local vu = game:GetService("VirtualUser")
-game:GetService("Players").LocalPlayer.Idled:Connect(function()
-    vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-    wait(1)
-    vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-end)
-
--- 2. GIAO DIỆN (UI)
+-- 1. HỆ THỐNG GIAO DIỆN (UI)
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "ChiiHauuHub"
+ScreenGui.Name = "ChiiHauuHub_Final"
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 550, 0, 350)
-MainFrame.Position = UDim2.new(0.5, -275, 0.5, -175)
+MainFrame.Size = UDim2.new(0, 420, 0, 320)
+MainFrame.Position = UDim2.new(0.5, -210, 0.5, -160)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
+MainFrame.Visible = false
 MainFrame.Parent = ScreenGui
 
 local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 12)
+MainCorner.CornerRadius = UDim.new(0, 10)
 MainCorner.Parent = MainFrame
 
--- NÚT ĐÓNG/MỞ BẰNG HÌNH ẢNH (SASUKE EYES)
 local CloseOpenBtn = Instance.new("ImageButton")
-CloseOpenBtn.Size = UDim2.new(0, 70, 0, 70)
+CloseOpenBtn.Size = UDim2.new(0, 45, 0, 45)
 CloseOpenBtn.Position = UDim2.new(0, 10, 0.1, 0)
-CloseOpenBtn.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
+CloseOpenBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 CloseOpenBtn.Image = "rbxassetid://138332159518012" 
 CloseOpenBtn.Active = true
 CloseOpenBtn.Draggable = true
 CloseOpenBtn.Parent = ScreenGui
 
 local btnCorner = Instance.new("UICorner")
-btnCorner.CornerRadius = UDim.new(0, 10)
+btnCorner.CornerRadius = UDim.new(0, 8)
 btnCorner.Parent = CloseOpenBtn
 
 local btnStroke = Instance.new("UIStroke")
-btnStroke.Color = Color3.fromRGB(255, 0, 0)
 btnStroke.Thickness = 2
 btnStroke.Parent = CloseOpenBtn
 
@@ -73,42 +54,78 @@ CloseOpenBtn.MouseButton1Click:Connect(function()
 end)
 
 local Title = Instance.new("TextLabel")
-Title.Text = "HUB BY CHII HAUU"
-Title.Size = UDim2.new(1, 0, 0, 45)
-Title.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
+Title.Text = "CHII HAUU HUB - FINAL V3"
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Title.TextColor3 = Color3.new(1, 1, 1)
 Title.Font = Enum.Font.GothamBold
 Title.Parent = MainFrame
 
 local ContentFrame = Instance.new("ScrollingFrame")
-ContentFrame.Size = UDim2.new(1, -20, 1, -60)
-ContentFrame.Position = UDim2.new(0, 10, 0, 50)
+ContentFrame.Size = UDim2.new(1, -20, 1, -55)
+ContentFrame.Position = UDim2.new(0, 10, 0, 45)
 ContentFrame.BackgroundTransparency = 1
-ContentFrame.ScrollBarThickness = 3
+ContentFrame.ScrollBarThickness = 2
 ContentFrame.Parent = MainFrame
 
 local Layout = Instance.new("UIListLayout")
 Layout.Parent = ContentFrame
 Layout.Padding = UDim.new(0, 8)
 
+spawn(function()
+    while task.wait() do
+        local color = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+        btnStroke.Color = color
+        Title.TextColor3 = color
+    end
+end)
+
 local function CreateToggle(name, default, callback)
-    local Button = Instance.new("TextButton")
-    Button.Size = UDim2.new(1, -10, 0, 35)
-    Button.BackgroundColor3 = default and Color3.fromRGB(180, 0, 0) or Color3.fromRGB(40, 40, 40)
-    Button.Text = name .. (default and ": ON" or ": OFF")
-    Button.TextColor3 = Color3.new(1, 1, 1)
-    Button.Font = Enum.Font.GothamSemibold
-    Button.Parent = ContentFrame
+    local ToggleFrame = Instance.new("Frame")
+    ToggleFrame.Size = UDim2.new(1, -10, 0, 38)
+    ToggleFrame.BackgroundTransparency = 1
+    ToggleFrame.Parent = ContentFrame
     
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 6)
-    Corner.Parent = Button
+    local Label = Instance.new("TextLabel")
+    Label.Text = name
+    Label.Size = UDim2.new(0.7, 0, 1, 0)
+    Label.BackgroundTransparency = 1
+    Label.TextColor3 = Color3.fromRGB(230, 230, 230)
+    Label.Font = Enum.Font.GothamSemibold
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = ToggleFrame
+
+    local SlideBack = Instance.new("Frame")
+    SlideBack.Size = UDim2.new(0, 45, 0, 22)
+    SlideBack.Position = UDim2.new(1, -50, 0.5, -11)
+    SlideBack.BackgroundColor3 = default and Color3.fromRGB(0, 180, 0) or Color3.fromRGB(60, 60, 60)
+    SlideBack.Parent = ToggleFrame
+    
+    local SlideCorner = Instance.new("UICorner")
+    SlideCorner.CornerRadius = UDim.new(1, 0)
+    SlideCorner.Parent = SlideBack
+
+    local Ball = Instance.new("Frame")
+    Ball.Size = UDim2.new(0, 18, 0, 18)
+    Ball.Position = default and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)
+    Ball.BackgroundColor3 = Color3.new(1, 1, 1)
+    Ball.Parent = SlideBack
+
+    local BallCorner = Instance.new("UICorner")
+    BallCorner.CornerRadius = UDim.new(1, 0)
+    BallCorner.Parent = Ball
 
     local state = default
+    local Button = Instance.new("TextButton")
+    Button.Size = UDim2.new(1, 0, 1, 0)
+    Button.BackgroundTransparency = 1
+    Button.Text = ""
+    Button.Parent = SlideBack
+
     Button.MouseButton1Click:Connect(function()
         state = not state
-        Button.Text = name .. (state and ": ON" or ": OFF")
-        Button.BackgroundColor3 = state and Color3.fromRGB(180, 0, 0) or Color3.fromRGB(40, 40, 40)
+        SlideBack.BackgroundColor3 = state and Color3.fromRGB(0, 180, 0) or Color3.fromRGB(60, 60, 60)
+        Ball:TweenPosition(state and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9), "Out", "Quad", 0.2, true)
         callback(state)
     end)
 end
@@ -119,7 +136,7 @@ CreateToggle("Siêu Đánh Nhanh", _G.FastAttack, function(v) _G.FastAttack = v 
 CreateToggle("Auto Buso Haki", _G.AutoBuso, function(v) _G.AutoBuso = v end)
 CreateToggle("Auto Stats (Melee)", _G.AutoStats, function(v) _G.AutoStats = v end)
 
--- 3. LOGIC GAME
+-- 2. HỆ THỐNG LOGIC GAME
 function CheckHasQuest()
     local pGui = game.Players.LocalPlayer:FindFirstChild("PlayerGui")
     if pGui and pGui:FindFirstChild("Main") and pGui.Main:FindFirstChild("Quest") then
@@ -128,52 +145,46 @@ function CheckHasQuest()
     return false
 end
 
--- Tự động tăng điểm (Stats)
-spawn(function()
-    while task.wait(1) do
-        if _G.AutoStats then
-            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AddPoint", "Melee", 3)
-        end
-    end
-end)
-
--- Vòng lặp Gom quái & Đánh
+-- Vòng lặp Gom & Đánh
 spawn(function()
     while task.wait() do
         if _G.AutoFarm then
             pcall(function()
                 local char = game.Players.LocalPlayer.Character
+                if char and char:FindFirstChildOfClass("Tool") and _G.FastAttack then
+                    game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 672))
+                end
+
                 if _G.BringMobs then
                     for _, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
                         if v.Name == MonsterName and v:FindFirstChild("HumanoidRootPart") and v.Humanoid.Health > 0 then
-                            v.HumanoidRootPart.CanCollide = false
-                            v.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame * CFrame.new(0, 0, -5)
+                            if (v.HumanoidRootPart.Position - char.HumanoidRootPart.Position).Magnitude < 250 then
+                                v.HumanoidRootPart.CanCollide = false
+                                v.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame * CFrame.new(0, 0, -5)
+                            end
                         end
                     end
-                end
-                if _G.FastAttack and char:FindFirstChildOfClass("Tool") then
-                    vu:CaptureController()
-                    vu:Button1Down(Vector2.new(1280, 672))
                 end
             end)
         end
     end
 end)
 
--- Vòng lặp Farm chính
+-- Vòng lặp Farm & Quest
 spawn(function()
-    while task.wait(0.1) do
+    while task.wait() do
         if _G.AutoFarm then
             pcall(function()
                 local player = game.Players.LocalPlayer
                 local char = player.Character
-                local root = char.HumanoidRootPart
+                if not char or not char:FindFirstChild("HumanoidRootPart") then return end
                 
-                Noclip() -- Luôn giữ trạng thái xuyên địa hình khi farm
-
-                if _G.AutoBuso and not char:FindFirstChild("HasBuso") then
-                    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
+                -- Noclip chuyên nghiệp
+                for _, v in pairs(char:GetDescendants()) do
+                    if v:IsA("BasePart") then v.CanCollide = false end
                 end
+
+                if _G.AutoStats then game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AddPoint", "Melee", 1) end
                 
                 if not char:FindFirstChildOfClass("Tool") then
                     local w = player.Backpack:FindFirstChild(_G.SelectWeapon)
@@ -183,17 +194,17 @@ spawn(function()
                 if not CheckHasQuest() then
                     local npc = game:GetService("Workspace").NPCs:FindFirstChild(QuestNPC)
                     if npc then
-                        root.CFrame = npc.HumanoidRootPart.CFrame * CFrame.new(0, 5, 0)
+                        char.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame * CFrame.new(0, 5, 0)
                         task.wait(0.2)
                         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", QuestName, 1)
                     end
                 else
                     local enemy = game:GetService("Workspace").Enemies:FindFirstChild(MonsterName)
-                    if enemy and enemy:FindFirstChild("HumanoidRootPart") then
-                        root.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 8, 0) -- Bay trên đầu quái
+                    if enemy and enemy:FindFirstChild("HumanoidRootPart") and enemy.Humanoid.Health > 0 then
+                        char.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, _G.AttackDistance, 0)
                     else
                         local sp = game:GetService("Workspace").EnemySpawns:FindFirstChild(MonsterName)
-                        if sp then root.CFrame = sp.CFrame * CFrame.new(0, 20, 0) end
+                        if sp then char.HumanoidRootPart.CFrame = sp.CFrame * CFrame.new(0, 25, 0) end
                     end
                 end
             end)
