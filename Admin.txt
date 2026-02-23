@@ -1,17 +1,17 @@
--- [[ CHII HAUU - FINAL FIX ]] --
+-- [[ CHII HAUU - GOD MODE EDITION 2026 ]] --
 repeat task.wait() until game:IsLoaded()
 
--- Cài đặt mặc định
+-- Cài đặt
 _G.AutoFarm = false
 _G.BringMobs = false
 _G.FastAttack = true 
-_G.AttackDistance = 8 -- Khoảng cách tối ưu để vừa đánh xa vừa không lỗi hitbox
+_G.AttackDistance = 8 
 _G.AutoStats = false 
 _G.SelectWeapon = "" 
 
 local QuestNPC, QuestName, MonsterName = "", "", ""
 
--- ANTI-AFK (Giúp treo máy không bị kick)
+-- ANTI-AFK
 local vu = game:GetService("VirtualUser")
 game:GetService("Players").LocalPlayer.Idled:Connect(function()
     vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
@@ -19,7 +19,7 @@ game:GetService("Players").LocalPlayer.Idled:Connect(function()
     vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
 end)
 
--- 1. HỆ THỐNG QUEST
+-- 1. UPDATE QUEST LOGIC (SEA 1 FULL)
 local function UpdateQuest()
     local lvl = game.Players.LocalPlayer.Data.Level.Value
     if lvl >= 0 and lvl < 15 then
@@ -57,155 +57,166 @@ local function UpdateQuest()
     end
 end
 
--- 2. GIAO DIỆN (Đã sửa để mượt hơn)
+-- 2. SIÊU FAST ATTACK (Sử dụng Tool Click liên tục)
+spawn(function()
+    while task.wait() do
+        if _G.AutoFarm and _G.FastAttack then
+            pcall(function()
+                local tool = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
+                if tool then
+                    -- Gửi tín hiệu đánh nhanh
+                    tool:Activate()
+                    game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 672))
+                end
+            end)
+        end
+    end
+end)
+
+-- 3. GIAO DIỆN UI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "CHII_HAUU"
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 420, 0, 360)
-MainFrame.Position = UDim2.new(0.5, -210, 0.5, -180)
+MainFrame.Size = UDim2.new(0, 300, 0, 380)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -190)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
 
-local CloseOpenBtn = Instance.new("ImageButton")
-CloseOpenBtn.Size = UDim2.new(0, 45, 0, 45)
-CloseOpenBtn.Position = UDim2.new(0.02, 0, 0.1, 0)
-CloseOpenBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-CloseOpenBtn.Image = "rbxassetid://138332159518012"
-CloseOpenBtn.Parent = ScreenGui
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Text = "CHII HAUU - GOD MODE"
+Title.TextColor3 = Color3.fromRGB(0, 255, 255)
+Title.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Title.Parent = MainFrame
 
-CloseOpenBtn.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
-
-local ContentFrame = Instance.new("ScrollingFrame")
-ContentFrame.Size = UDim2.new(1, -20, 1, -55)
-ContentFrame.Position = UDim2.new(0, 10, 0, 45)
-ContentFrame.BackgroundTransparency = 1
-ContentFrame.Parent = MainFrame
+local Content = Instance.new("ScrollingFrame")
+Content.Size = UDim2.new(1, 0, 1, -45)
+Content.Position = UDim2.new(0, 0, 0, 45)
+Content.BackgroundTransparency = 1
+Content.Parent = MainFrame
 local Layout = Instance.new("UIListLayout")
-Layout.Parent = ContentFrame
-Layout.Padding = UDim.new(0, 8)
+Layout.Parent = Content
 
-local RefreshBtn = Instance.new("TextButton")
-RefreshBtn.Text = "CHỌN VŨ KHÍ TRÊN TAY"
-RefreshBtn.Size = UDim2.new(1, -10, 0, 35)
-RefreshBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-RefreshBtn.TextColor3 = Color3.new(1, 1, 1)
-RefreshBtn.Parent = ContentFrame
-
-RefreshBtn.MouseButton1Click:Connect(function()
-    local held = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
-    if held then 
-        _G.SelectWeapon = held.Name 
-        RefreshBtn.Text = "VŨ KHÍ: " .. held.Name
+-- Nút chọn vũ khí
+local WeaponBtn = Instance.new("TextButton")
+WeaponBtn.Size = UDim2.new(1, -10, 0, 40)
+WeaponBtn.Text = "👉 CHỌN VŨ KHÍ TRÊN TAY"
+WeaponBtn.Parent = Content
+WeaponBtn.MouseButton1Click:Connect(function()
+    local tool = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
+    if tool then 
+        _G.SelectWeapon = tool.Name 
+        WeaponBtn.Text = "Đã chọn: "..tool.Name
     end
 end)
 
-local function CreateToggle(name, default, callback)
-    local Button = Instance.new("TextButton")
-    Button.Size = UDim2.new(1, -10, 0, 35)
-    Button.Text = name .. (default and ": ON" or ": OFF")
-    Button.BackgroundColor3 = default and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(60, 60, 60)
-    Button.Parent = ContentFrame
-    Button.MouseButton1Click:Connect(function()
-        default = not default
-        Button.Text = name .. (default and ": ON" or ": OFF")
-        Button.BackgroundColor3 = default and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(60, 60, 60)
-        callback(default)
+function CreateBtn(name, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -10, 0, 40)
+    btn.Text = name .. ": OFF"
+    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Parent = Content
+    local state = false
+    btn.MouseButton1Click:Connect(function()
+        state = not state
+        btn.Text = name .. (state and ": ON" or ": OFF")
+        btn.BackgroundColor3 = state and Color3.fromRGB(0, 180, 0) or Color3.fromRGB(45, 45, 45)
+        callback(state)
     end)
 end
 
-CreateToggle("Auto Farm Level", _G.AutoFarm, function(v) _G.AutoFarm = v end)
-CreateToggle("Gom Quái", _G.BringMobs, function(v) _G.BringMobs = v end)
-CreateToggle("Siêu Đánh Nhanh", _G.FastAttack, function(v) _G.FastAttack = v end)
-CreateToggle("Auto Stats Melee", _G.AutoStats, function(v) _G.AutoStats = v end)
+CreateBtn("Auto Farm Level", function(v) _G.AutoFarm = v end)
+CreateBtn("Gom Quái (Bring)", function(v) _G.BringMobs = v end)
+CreateBtn("Siêu Đánh Nhanh", function(v) _G.FastAttack = v end)
+CreateBtn("Auto Stats Melee", function(v) _G.AutoStats = v end)
 
--- 3. CORE LOGIC
+-- 4. LOGIC VẬT LÝ (NOCLIP)
 spawn(function()
-    while task.wait(1) do
-        if _G.AutoStats then
-            local points = game.Players.LocalPlayer.Data.StatsPoints.Value
-            if points > 0 then
-                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AddPoint", "Melee", points)
-            end
-        end
-    end
-end)
-
-local function GetNearestTarget()
-    local nearest = nil
-    local dist = 45 
-    local char = game.Players.LocalPlayer.Character
-    if char and char:FindFirstChild("HumanoidRootPart") then
-        for _, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
-            if v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
-                local d = (char.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude
-                if d < dist then nearest = v; dist = d end
-            end
-        end
-    end
-    return nearest
-end
-
-spawn(function()
-    while task.wait() do
+    game:GetService("RunService").Stepped:Connect(function()
         if _G.AutoFarm then
-            pcall(function()
-                local char = game.Players.LocalPlayer.Character
-                if _G.SelectWeapon ~= "" and not char:FindFirstChild(_G.SelectWeapon) then
-                    local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(_G.SelectWeapon)
-                    if tool then char.Humanoid:EquipTool(tool) end
+            if game.Players.LocalPlayer.Character then
+                for _, v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+                    if v:IsA("BasePart") then v.CanCollide = false end
                 end
-                if _G.FastAttack and GetNearestTarget() then
-                    vu:CaptureController()
-                    vu:Button1Down(Vector2.new(1280, 672))
-                end
-                if _G.BringMobs then
-                    for _, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
-                        if v.Name == MonsterName and v:FindFirstChild("HumanoidRootPart") and v.Humanoid.Health > 0 then
-                            v.HumanoidRootPart.CanCollide = false
-                            v.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame * CFrame.new(0, 0, -8)
-                        end
-                    end
-                end
-            end)
+            end
+        end
+    end)
+end)
+
+-- 5. AUTO STATS
+spawn(function()
+    while task.wait(0.5) do
+        if _G.AutoStats then
+            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AddPoint", "Melee", 1)
         end
     end
 end)
 
+-- 6. FARM LOGIC (CHÍNH)
 spawn(function()
     while task.wait(0.1) do
         if _G.AutoFarm then
             UpdateQuest()
             pcall(function()
                 local char = game.Players.LocalPlayer.Character
-                local root = char:FindFirstChild("HumanoidRootPart")
-                if not root then return end
+                local root = char.HumanoidRootPart
+
+                -- BodyVelocity giữ thăng bằng
+                if not root:FindFirstChild("CHII_FLY") then
+                    local bv = Instance.new("BodyVelocity")
+                    bv.Name = "CHII_FLY"
+                    bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+                    bv.Velocity = Vector3.new(0, 0, 0)
+                    bv.Parent = root
+                end
+
+                -- Trang bị vũ khí
+                if _G.SelectWeapon ~= "" and not char:FindFirstChild(_G.SelectWeapon) then
+                    local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(_G.SelectWeapon)
+                    if tool then char.Humanoid:EquipTool(tool) end
+                end
 
                 if not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible then
+                    -- Đi nhận Quest
                     local npc = game:GetService("Workspace").NPCs:FindFirstChild(QuestNPC)
                     if npc then
-                        root.CFrame = npc.HumanoidRootPart.CFrame * CFrame.new(0, 5, 0)
+                        root.CFrame = npc.HumanoidRootPart.CFrame * CFrame.new(0, 0, 1)
+                        task.wait(0.2)
                         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", QuestName, 1)
                     end
                 else
+                    -- Đi đánh quái
                     local enemy = game:GetService("Workspace").Enemies:FindFirstChild(MonsterName)
                     if enemy and enemy:FindFirstChild("HumanoidRootPart") and enemy.Humanoid.Health > 0 then
                         root.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, _G.AttackDistance, 0)
                         root.CFrame = CFrame.lookAt(root.Position, enemy.HumanoidRootPart.Position)
+                        
+                        -- Gom quái (nếu bật)
+                        if _G.BringMobs then
+                            enemy.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame * CFrame.new(0, 0, -5)
+                            enemy.HumanoidRootPart.CanCollide = false
+                        end
                     else
+                        -- Đợi quái hồi sinh
                         for _, sp in pairs(game:GetService("Workspace").EnemySpawns:GetChildren()) do
                             if sp.Name == MonsterName then
-                                root.CFrame = sp.CFrame * CFrame.new(0, 20, 0)
-                                break
+                                root.CFrame = sp.CFrame * CFrame.new(0, 30, 0)
                             end
                         end
                     end
                 end
             end)
+        else
+            -- Xóa Fly khi tắt
+            if game.Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("CHII_FLY") then
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CHII_FLY:Destroy()
+            end
         end
     end
 end)
