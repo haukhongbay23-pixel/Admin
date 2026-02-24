@@ -1,197 +1,168 @@
--- [[ CHII HAUU - ULTIMATE HUB EDITION 2026 ]] --
-repeat task.wait() until game:IsLoaded()
+-- [[ CHII HAUU HUB - BLOX FRUITS V2 ]] --
 
--- Cài đặt mặc định
-_G.AutoFarm = false
-_G.BringMobs = true -- Luôn bật để farm nhanh
-_G.FastAttack = true 
-_G.AttackDistance = 8 
-_G.AutoStats = false 
-_G.AutoChest = false
-_G.AutoNewWorld = true -- Tự động sang Sea mới khi đủ Level
-_G.SelectWeapon = "" 
-
-local QuestNPC, QuestName, MonsterName = "", "", ""
-
--- ANTI-AFK (Giữ kết nối 24/7)
-local vu = game:GetService("VirtualUser")
-game:GetService("Players").LocalPlayer.Idled:Connect(function()
-    vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-    task.wait(1)
-    vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-end)
-
--- 1. HỆ THỐNG KIỂM TRA ĐẢO VÀ NHẬN QUEST (SEA 1, 2, 3)
-local function UpdateQuest()
-    local lvl = game.Players.LocalPlayer.Data.Level.Value
-    -- Sea 1
-    if lvl >= 0 and lvl < 15 then
-        QuestNPC = "Bandit Quest Giver"; QuestName = "BanditQuest1"; MonsterName = "Bandit"
-    elseif lvl >= 15 and lvl < 30 then
-        QuestNPC = "Monkey Quest Giver"; QuestName = "MonkeyQuest1"; MonsterName = "Monkey"
-    -- ... (Các logic Quest khác được tự động cập nhật theo Level của bạn)
-    elseif lvl >= 700 and lvl < 1500 then -- Sea 2 (Ví dụ)
-        QuestNPC = "Quest Custodian"; QuestName = "Area1Quest"; MonsterName = "Raider"
-    elseif lvl >= 1500 then -- Sea 3
-        QuestNPC = "Chippy"; QuestName = "PiratePortQuest1"; MonsterName = "Pirate Billionaire"
-    end
-end
-
--- 2. GIAO DIỆN CHII HAUU ULTIMATE (Phong cách Redz Hub)
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "CHII_HAUU_ULTI"
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+local MainFrame = Instance.new("Frame") 
+local ToggleButton = Instance.new("ImageButton") 
+local TitleLabel = Instance.new("TextLabel")
+local ScrollingFrame = Instance.new("ScrollingFrame")
+local UIListLayout = Instance.new("UIListLayout")
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 450, 0, 320)
-MainFrame.Position = UDim2.new(0.5, -225, 0.5, -160)
-MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-MainFrame.BorderSizePixel = 0
+-- Thiết lập hệ thống UI
+ScreenGui.Parent = game.CoreGui
+ScreenGui.Name = "ChiiHauuHub_V2"
+
+-- 1. NÚT NHỎ HÌNH VUÔNG (Bật/Tắt Menu)
+ToggleButton.Name = "MiniMenu"
+ToggleButton.Size = UDim2.new(0, 55, 0, 55) 
+ToggleButton.Position = UDim2.new(0, 20, 0, 20)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ToggleButton.BorderSizePixel = 0
+ToggleButton.Image = "rbxassetid://6031073253" 
+ToggleButton.Parent = ScreenGui
+
+local BtnCorner = Instance.new("UICorner")
+BtnCorner.CornerRadius = UDim.new(0, 12)
+BtnCorner.Parent = ToggleButton
+
+-- 2. MENU CHÍNH
+MainFrame.Name = "MainMenu"
+MainFrame.Size = UDim2.new(0, 350, 0, 420)
+MainFrame.Position = UDim2.new(0.5, -175, 0.5, -210)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+MainFrame.Visible = false
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
 
-local SideBar = Instance.new("Frame")
-SideBar.Size = UDim2.new(0, 120, 1, 0)
-SideBar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-SideBar.Parent = MainFrame
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 15)
+MainCorner.Parent = MainFrame
 
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 40)
-Title.Text = "CHII HAUU HUB"
-Title.TextColor3 = Color3.fromRGB(255, 0, 0)
-Title.Font = Enum.Font.GothamBold
-Title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-Title.Parent = MainFrame
+-- 3. TIÊU ĐỀ (Chii Hauu)
+TitleLabel.Text = "★ CHII HAUU HUB V2 ★"
+TitleLabel.Size = UDim2.new(1, 0, 0, 50)
+TitleLabel.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+TitleLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
+TitleLabel.TextSize = 20
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.Parent = MainFrame
 
-local Container = Instance.new("ScrollingFrame")
-Container.Size = UDim2.new(1, -130, 1, -50)
-Container.Position = UDim2.new(0, 130, 0, 45)
-Container.BackgroundTransparency = 1
-Container.ScrollBarThickness = 3
-Container.Parent = MainFrame
-local Layout = Instance.new("UIListLayout")
-Layout.Parent = Container
-Layout.Padding = UDim.new(0, 5)
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 15)
+TitleCorner.Parent = TitleLabel
 
--- Nút chọn vũ khí
-local WeaponBtn = Instance.new("TextButton")
-WeaponBtn.Size = UDim2.new(1, -10, 0, 35)
-WeaponBtn.Text = "👉 CHỌN VŨ KHÍ: NONE"
-WeaponBtn.Parent = Container
-WeaponBtn.MouseButton1Click:Connect(function()
-    local tool = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
-    if tool then 
-        _G.SelectWeapon = tool.Name 
-        WeaponBtn.Text = "Vũ khí: "..tool.Name
-    end
-end)
+-- 4. KHUNG CHỨA CHỨC NĂNG
+ScrollingFrame.Size = UDim2.new(1, -20, 1, -70)
+ScrollingFrame.Position = UDim2.new(0, 10, 0, 60)
+ScrollingFrame.BackgroundTransparency = 1
+ScrollingFrame.ScrollBarThickness = 2
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 1.4, 0)
+ScrollingFrame.Parent = MainFrame
 
-function AddToggle(name, callback)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -10, 0, 35)
-    btn.Text = name .. ": OFF"
-    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    btn.Parent = Container
-    local toggle = false
-    btn.MouseButton1Click:Connect(function()
-        toggle = not toggle
-        btn.Text = name .. (toggle and ": ON" or ": OFF")
-        btn.BackgroundColor3 = toggle and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(30, 30, 30)
-        callback(toggle)
+UIListLayout.Parent = ScrollingFrame
+UIListLayout.Padding = UDim.new(0, 8)
+UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+-- 5. BIẾN TRẠNG THÁI
+_G.AutoFarm = false
+_G.AutoQuest = false
+_G.AutoAttack = false
+_G.BringMob = false
+_G.AntiAFK = true -- Mặc định bật để bảo vệ tài khoản
+
+-- 6. HÀM TẠO NÚT
+local function AddToggle(text, variableName)
+    local Button = Instance.new("TextButton")
+    Button.Size = UDim2.new(0.95, 0, 0, 45)
+    Button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    Button.Text = text .. " : OFF"
+    Button.TextColor3 = Color3.fromRGB(200, 200, 200)
+    Button.Font = Enum.Font.GothamMedium
+    Button.TextSize = 14
+    Button.Parent = ScrollingFrame
+    
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 8)
+    Corner.Parent = Button
+    
+    Button.MouseButton1Click:Connect(function()
+        _G[variableName] = not _G[variableName]
+        if _G[variableName] then
+            Button.Text = text .. " : ON"
+            Button.TextColor3 = Color3.fromRGB(0, 255, 100)
+            Button.BackgroundColor3 = Color3.fromRGB(40, 50, 40)
+        else
+            Button.Text = text .. " : OFF"
+            Button.TextColor3 = Color3.fromRGB(200, 200, 200)
+            Button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        end
     end)
 end
 
-AddToggle("Auto Farm Level", function(v) _G.AutoFarm = v end)
-AddToggle("Auto Stats (Melee)", function(v) _G.AutoStats = v end)
-AddToggle("Auto Nhặt Rương", function(v) _G.AutoChest = v end)
-AddToggle("Sang Sea Mới", function(v) _G.AutoNewWorld = v end)
+-- THÊM NÚT (Sắp xếp lại cho đẹp)
+AddToggle("Auto Farm Level", "AutoFarm")
+AddToggle("Auto Nhận Nhiệm Vụ", "AutoQuest")
+AddToggle("Auto Đánh (Fast Attack)", "AutoAttack")
+AddToggle("Gom Quái (Bring Mobs)", "BringMob")
+AddToggle("Chống Treo Máy (Anti-AFK)", "AntiAFK")
 
--- 3. CORE LOGIC (VẬN HÀNH)
+-- 7. LOGIC HỆ THỐNG
+local VirtualUser = game:GetService("VirtualUser")
+local Player = game.Players.LocalPlayer
 
--- Noclip & BodyVelocity (Ổn định vị trí)
-spawn(function()
-    game:GetService("RunService").Stepped:Connect(function()
-        if _G.AutoFarm or _G.AutoChest then
-            if game.Players.LocalPlayer.Character then
-                for _, v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
-                    if v:IsA("BasePart") then v.CanCollide = false end
-                end
-            end
-        end
-    end)
+-- Anti-AFK Logic (Giúp không bị Kick sau 20p)
+Player.Idled:Connect(function()
+    if _G.AntiAFK then
+        VirtualUser:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+        wait(1)
+        VirtualUser:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+    end
 end)
 
--- Auto Click & Fast Attack
-spawn(function()
+-- Auto Click & Equip
+task.spawn(function()
     while task.wait() do
-        if _G.AutoFarm and _G.FastAttack then
+        if _G.AutoAttack or _G.AutoFarm then
             pcall(function()
-                local tool = game.Players.LocalPlayer.Character:FindFirstChild(_G.SelectWeapon)
-                if tool then
-                    tool:Activate()
-                    game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 672))
+                -- Tự cầm vũ khí
+                local tool = Player.Backpack:FindFirstChild("Combat") or Player.Backpack:FindFirstChild("Melee") or Player.Character:FindFirstChildOfClass("Tool")
+                if tool and not Player.Character:FindFirstChild(tool.Name) then
+                    Player.Character.Humanoid:EquipTool(tool)
                 end
+                -- Đánh
+                VirtualUser:CaptureController()
+                VirtualUser:ClickButton2(Vector2.new())
             end)
         end
     end
 end)
 
--- Auto Chest (Nhặt rương kiếm tiền)
-spawn(function()
+-- Gom Quái Logic (Cơ bản)
+task.spawn(function()
     while task.wait() do
-        if _G.AutoChest then
-            for _, v in pairs(game:GetService("Workspace"):GetChildren()) do
-                if v.Name:find("Chest") and v:IsA("TouchTransmitter") then
-                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame
-                end
-            end
-        end
-    end
-end)
-
--- Main Farm & Quest
-spawn(function()
-    while task.wait(0.1) do
-        if _G.AutoFarm then
-            UpdateQuest()
+        if _G.BringMob then
             pcall(function()
-                local char = game.Players.LocalPlayer.Character
-                local root = char.HumanoidRootPart
-
-                -- Giữ bay lơ lửng
-                if not root:FindFirstChild("CHII_FLY") then
-                    local bv = Instance.new("BodyVelocity")
-                    bv.Name = "CHII_FLY"; bv.MaxForce = Vector3.new(9e9, 9e9, 9e9); bv.Velocity = Vector3.new(0,0,0)
-                    bv.Parent = root
-                end
-
-                if not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible then
-                    local npc = game:GetService("Workspace").NPCs:FindFirstChild(QuestNPC)
-                    if npc then
-                        root.CFrame = npc.HumanoidRootPart.CFrame * CFrame.new(0, 0, 2)
-                        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", QuestName, 1)
-                    end
-                else
-                    local enemy = game:GetService("Workspace").Enemies:FindFirstChild(MonsterName)
-                    if enemy and enemy:FindFirstChild("HumanoidRootPart") and enemy.Humanoid.Health > 0 then
-                        root.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, _G.AttackDistance, 0)
-                        root.CFrame = CFrame.lookAt(root.Position, enemy.HumanoidRootPart.Position)
-                        
-                        -- Gom quái
-                        if _G.BringMobs then
-                            enemy.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame * CFrame.new(0, 0, -5)
-                            enemy.HumanoidRootPart.CanCollide = false
-                        end
-                    else
-                        -- Bay về điểm quái chờ
-                        for _, sp in pairs(game:GetService("Workspace").EnemySpawns:GetChildren()) do
-                            if sp.Name == MonsterName then root.CFrame = sp.CFrame * CFrame.new(0, 25, 0) end
-                        end
+                for i,v in pairs(game.Workspace.Enemies:GetChildren()) do
+                    if v:FindFirstChild("HumanoidRootPart") and (v.HumanoidRootPart.Position - Player.Character.HumanoidRootPart.Position).magnitude < 300 then
+                        v.HumanoidRootPart.CFrame = Player.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -5)
+                        v.HumanoidRootPart.CanCollide = false
+                        v.Humanoid.WalkSpeed = 0
                     end
                 end
             end)
         end
     end
 end)
+
+-- 8. THÔNG BÁO & LOGIC ĐÓNG/MỞ
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "CHII HAUU HUB V2",
+    Text = "Anti-AFK đã kích hoạt. Sẵn sàng Farm!",
+    Duration = 5;
+})
+
+ToggleButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+print("CHII HAUU HUB V2 Đã Chạy!")
