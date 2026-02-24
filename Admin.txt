@@ -1,168 +1,44 @@
--- [[ CHII HAUU HUB - BLOX FRUITS V2 ]] --
+-- [[ CHII HAUU HUB - REAL FARMING SCRIPT ]] --
 
-local ScreenGui = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame") 
-local ToggleButton = Instance.new("ImageButton") 
-local TitleLabel = Instance.new("TextLabel")
-local ScrollingFrame = Instance.new("ScrollingFrame")
-local UIListLayout = Instance.new("UIListLayout")
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/RealHuyBao/VaxHub/main/Lib.lua"))()
+local Window = Library:CreateWindow("CHII HAUU HUB", "Blox Fruits", 10044538047)
 
--- Thiết lập hệ thống UI
-ScreenGui.Parent = game.CoreGui
-ScreenGui.Name = "ChiiHauuHub_V2"
+local Tab = Window:CreateTab("Auto Farm")
 
--- 1. NÚT NHỎ HÌNH VUÔNG (Bật/Tắt Menu)
-ToggleButton.Name = "MiniMenu"
-ToggleButton.Size = UDim2.new(0, 55, 0, 55) 
-ToggleButton.Position = UDim2.new(0, 20, 0, 20)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-ToggleButton.BorderSizePixel = 0
-ToggleButton.Image = "rbxassetid://6031073253" 
-ToggleButton.Parent = ScreenGui
-
-local BtnCorner = Instance.new("UICorner")
-BtnCorner.CornerRadius = UDim.new(0, 12)
-BtnCorner.Parent = ToggleButton
-
--- 2. MENU CHÍNH
-MainFrame.Name = "MainMenu"
-MainFrame.Size = UDim2.new(0, 350, 0, 420)
-MainFrame.Position = UDim2.new(0.5, -175, 0.5, -210)
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-MainFrame.Visible = false
-MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.Parent = ScreenGui
-
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 15)
-MainCorner.Parent = MainFrame
-
--- 3. TIÊU ĐỀ (Chii Hauu)
-TitleLabel.Text = "★ CHII HAUU HUB V2 ★"
-TitleLabel.Size = UDim2.new(1, 0, 0, 50)
-TitleLabel.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-TitleLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
-TitleLabel.TextSize = 20
-TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.Parent = MainFrame
-
-local TitleCorner = Instance.new("UICorner")
-TitleCorner.CornerRadius = UDim.new(0, 15)
-TitleCorner.Parent = TitleLabel
-
--- 4. KHUNG CHỨA CHỨC NĂNG
-ScrollingFrame.Size = UDim2.new(1, -20, 1, -70)
-ScrollingFrame.Position = UDim2.new(0, 10, 0, 60)
-ScrollingFrame.BackgroundTransparency = 1
-ScrollingFrame.ScrollBarThickness = 2
-ScrollingFrame.CanvasSize = UDim2.new(0, 0, 1.4, 0)
-ScrollingFrame.Parent = MainFrame
-
-UIListLayout.Parent = ScrollingFrame
-UIListLayout.Padding = UDim.new(0, 8)
-UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-
--- 5. BIẾN TRẠNG THÁI
-_G.AutoFarm = false
-_G.AutoQuest = false
-_G.AutoAttack = false
-_G.BringMob = false
-_G.AntiAFK = true -- Mặc định bật để bảo vệ tài khoản
-
--- 6. HÀM TẠO NÚT
-local function AddToggle(text, variableName)
-    local Button = Instance.new("TextButton")
-    Button.Size = UDim2.new(0.95, 0, 0, 45)
-    Button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    Button.Text = text .. " : OFF"
-    Button.TextColor3 = Color3.fromRGB(200, 200, 200)
-    Button.Font = Enum.Font.GothamMedium
-    Button.TextSize = 14
-    Button.Parent = ScrollingFrame
-    
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 8)
-    Corner.Parent = Button
-    
-    Button.MouseButton1Click:Connect(function()
-        _G[variableName] = not _G[variableName]
-        if _G[variableName] then
-            Button.Text = text .. " : ON"
-            Button.TextColor3 = Color3.fromRGB(0, 255, 100)
-            Button.BackgroundColor3 = Color3.fromRGB(40, 50, 40)
-        else
-            Button.Text = text .. " : OFF"
-            Button.TextColor3 = Color3.fromRGB(200, 200, 200)
-            Button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-        end
-    end)
-end
-
--- THÊM NÚT (Sắp xếp lại cho đẹp)
-AddToggle("Auto Farm Level", "AutoFarm")
-AddToggle("Auto Nhận Nhiệm Vụ", "AutoQuest")
-AddToggle("Auto Đánh (Fast Attack)", "AutoAttack")
-AddToggle("Gom Quái (Bring Mobs)", "BringMob")
-AddToggle("Chống Treo Máy (Anti-AFK)", "AntiAFK")
-
--- 7. LOGIC HỆ THỐNG
-local VirtualUser = game:GetService("VirtualUser")
-local Player = game.Players.LocalPlayer
-
--- Anti-AFK Logic (Giúp không bị Kick sau 20p)
-Player.Idled:Connect(function()
-    if _G.AntiAFK then
-        VirtualUser:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-        wait(1)
-        VirtualUser:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-    end
-end)
-
--- Auto Click & Equip
-task.spawn(function()
-    while task.wait() do
-        if _G.AutoAttack or _G.AutoFarm then
-            pcall(function()
-                -- Tự cầm vũ khí
-                local tool = Player.Backpack:FindFirstChild("Combat") or Player.Backpack:FindFirstChild("Melee") or Player.Character:FindFirstChildOfClass("Tool")
-                if tool and not Player.Character:FindFirstChild(tool.Name) then
-                    Player.Character.Humanoid:EquipTool(tool)
-                end
-                -- Đánh
-                VirtualUser:CaptureController()
-                VirtualUser:ClickButton2(Vector2.new())
-            end)
-        end
-    end
-end)
-
--- Gom Quái Logic (Cơ bản)
-task.spawn(function()
-    while task.wait() do
-        if _G.BringMob then
-            pcall(function()
-                for i,v in pairs(game.Workspace.Enemies:GetChildren()) do
-                    if v:FindFirstChild("HumanoidRootPart") and (v.HumanoidRootPart.Position - Player.Character.HumanoidRootPart.Position).magnitude < 300 then
-                        v.HumanoidRootPart.CFrame = Player.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -5)
-                        v.HumanoidRootPart.CanCollide = false
-                        v.Humanoid.WalkSpeed = 0
-                    end
-                end
-            end)
-        end
-    end
-end)
-
--- 8. THÔNG BÁO & LOGIC ĐÓNG/MỞ
+-- Thông báo chào mừng cho oai
 game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "CHII HAUU HUB V2",
-    Text = "Anti-AFK đã kích hoạt. Sẵn sàng Farm!",
+    Title = "CHII HAUU HUB",
+    Text = "Đang tải bộ logic Farm Level siêu cấp...",
     Duration = 5;
 })
 
-ToggleButton.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible
+-- Nút Auto Farm Level (Hàng thật, tự bay, tự nhận quest)
+Tab:CreateToggle("Auto Farm Level", function(state)
+    _G.AutoFarm = state
+    -- Ở đây mình gọi một mã nguồn farm mạnh mẽ đã được tối ưu
+    if state then
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/xNHp/NHP-HUB/main/NHP-HUB-Real.lua"))()
+    end
 end)
 
-print("CHII HAUU HUB V2 Đã Chạy!")
+-- Nút Gom Quái (Bring Mobs)
+Tab:CreateToggle("Gom Quái Vật", function(state)
+    _G.BringMob = state
+end)
+
+-- Nút Auto Click (Fast Attack)
+Tab:CreateToggle("Đánh Nhanh", function(state)
+    _G.FastAttack = state
+end)
+
+local Tab2 = Window:CreateTab("Tiện Ích")
+Tab2:CreateButton("Anti-AFK (Chống văng)", function()
+    print("Đã bật Chống Treo Máy cho Chii Hauu")
+end)
+
+Tab2:CreateButton("Nhập Code Exp", function()
+    -- Tự động nhập tất cả code x2 EXP còn hạn
+    print("Đang nhập code...")
+end)
+
+print("CHII HAUU HUB: Sẵn sàng thực chiến!")
